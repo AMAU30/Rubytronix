@@ -1,0 +1,735 @@
+<!doctype html>
+<!--
+  Rubytronix IT Solutions — Enhanced (2025-ready) single-file site
+  - Single HTML file, responsive, Bootstrap 5.3 + Bootstrap Icons
+  - Theme toggle (light/dark), accessible markup, smooth scroll, IntersectionObserver
+  - Navbar height is configurable via CSS variables (see comment near :root)
+  - Hostable on GitHub Pages: no server-side code required
+  - Implemented/assembled with assistance from latest ChatGPT-generation (developer note)
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Rubytronix IT Solutions — We specialize in Digital Marketing , AI/ML , web ,Mobile Development</title>
+
+  <!-- Bootstrap 5.3 CSS (CDN is okay for GitHub Pages) -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Bootstrap Icons (lightweight vector icons) -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+  <!-- Google Inter font for crisp modern UI (fallback to system fonts if blocked) -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    /*
+      ---------- CONFIG: tweak these to change global sizing & navbar height ----------
+      --nav-padding-y controls the vertical padding of the navbar (thus overall height).
+      If the navbar feels too tall, reduce this value (e.g. 0.2rem). If too compact, increase.
+      --brand-size controls the brand mark square size.
+    */
+    :root{
+      /* NAVBAR sizing - tweak here */
+      --nav-padding-y: 0.36rem;     /* <-- change this to reduce/increase navbar height */
+      --brand-size: 44px;          /* <-- change to scale the brand mark (logo) */
+
+      /* Color tokens (light + dark theme handled below) */
+      --accent1: #7c3aed;
+      --accent2: #06b6d4;
+      --glass-border: rgba(255,255,255,0.06);
+      --muted: #9aa6b2;
+
+      /* UI spacing tokens */
+      --radius-lg: 14px;
+      --glass-blur: 10px;
+      --transition-fast: 180ms;
+    }
+
+    /* Basic resets & typography */
+    html,body{height:100%; margin:0; font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;}
+    a { text-decoration:none; }
+    img { max-width:100%; height:auto; display:block; }
+
+    /*
+      THEME: default is dark (class 'theme-light' toggles lighter variant).
+      Both themes use CSS variables for quick control.
+    */
+    body {
+      background: linear-gradient(180deg, #061018 0%, #07121a 100%);
+      color: #eaf2ff;
+      -webkit-font-smoothing:antialiased;
+      scroll-behavior: smooth;
+    }
+
+    /* ---- LIGHT THEME ---- */
+    body.theme-light {
+      background: linear-gradient(180deg,#f7fbff 0%, #eef6fb 100%);
+      color: #0b1420;
+    }
+
+    /* ---------- Header / Navbar ---------- */
+    header.navbar {
+      position: sticky;
+      top: 0;
+      z-index: 1100;
+      display:flex;
+      align-items:center;
+      background: linear-gradient(180deg, rgba(83, 84, 86, 0.6), rgba(45, 68, 86, 0.25));
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+      padding-top: var(--nav-padding-y);
+      padding-bottom: var(--nav-padding-y);
+      transition: background var(--transition-fast), padding var(--transition-fast);
+    }
+
+    /* note: reduce nav icon and brand padding if you want narrower navbar */
+    .navbar-brand { display:flex; align-items:center; gap:12px; padding:0;}
+    .brand-mark { width:var(--brand-size); height:var(--brand-size); border-radius:10px; display:grid; place-items:center; background: linear-gradient(135deg, var(--accent1), var(--accent2)); box-shadow: 0 14px 40px rgba(124,58,237,0.12); }
+
+    /* navbar link compactness */
+    .navbar .nav-link { color: rgba(255,255,255,0.86); padding: 0.35rem 0.75rem; font-weight:600; }
+    body.theme-light .navbar .nav-link { color: rgba(11,20,32,0.88); }
+    .nav-link.active { color: white !important; position:relative; }
+    .nav-link.active::after { content:""; position:absolute; left:22%; bottom:-10px; width:56%; height:3px; border-radius:6px; background: linear-gradient(90deg,var(--accent2),var(--accent1)); }
+
+    /* smaller toggler icon and collapse spacing */
+    .navbar-toggler { border-radius:8px; border:1px solid rgba(255,255,255,0.04); padding:.3rem .5rem; }
+
+    /* ---------- HERO with world-map graphic ---------- */
+    .hero {
+      position:relative;
+      padding: 3.5rem 0 5rem;
+      overflow:hidden;
+    }
+
+    /* decorative world map — inline SVG is used below for performance and easy styling */
+    .worldmap-deco { position:absolute; inset:0; pointer-events:none; opacity:0.12; transform: translateY(-4%); filter: blur(0.8px) contrast(1.05); }
+
+    .hero-inner { display:grid; grid-template-columns: 1fr; gap:1.3rem; align-items:center; }
+    @media(min-width:992px){ .hero-inner { grid-template-columns: 1fr 420px; gap:2.2rem; } }
+
+    .hero-panel {
+      border-radius: var(--radius-lg);
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border:1px solid var(--glass-border);
+      padding: 1.6rem;
+      backdrop-filter: blur(var(--glass-blur));
+      box-shadow: 0 18px 48px rgba(7,89,133,0.06);
+    }
+    body.theme-light .hero-panel { background: linear-gradient(180deg, rgba(5,20,30,0.02), rgba(255,255,255,0.9)); border-color: rgba(11,20,32,0.04); }
+
+    .hero-title { font-size: clamp(1.9rem, 3.6vw, 2.8rem); line-height:1.02; margin:0; font-weight:800; letter-spacing:-0.6px; }
+    .hero-sub { color: var(--muted); margin-top:.6rem; font-size:1.02rem; }
+
+    .btn-neon {
+      background: linear-gradient(90deg,var(--accent2),var(--accent1));
+      color: white;
+      border: none;
+      padding: .72rem 1rem;
+      border-radius: 12px;
+      font-weight:700;
+      box-shadow: 0 14px 42px rgba(6,182,212,0.08);
+      transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+    }
+    .btn-neon:hover { transform: translateY(-4px); }
+
+    /* features list */
+    .features { display:flex; gap:.8rem; flex-wrap:wrap; margin-top:1rem; }
+    .feature { display:flex; gap:.7rem; align-items:center; color:var(--muted); font-size:.95rem; }
+
+
+    /* mini stat chips */
+    .stat-chip { display:inline-flex; gap:.6rem; align-items:center; padding:.5rem .7rem; border-radius:999px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.03); color:var(--muted); font-weight:600; }
+
+    /* ---------- SERVICES - sleeker card style ---------- */
+    .services-grid .card {
+      border-radius:12px; background: linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.01));
+      border: 1px solid var(--glass-border); padding:1.15rem; transition: transform .22s ease, box-shadow .22s ease;
+    }
+    .services-grid .card:hover { transform: translateY(-8px); box-shadow: 0 20px 48px rgba(3,7,16,0.48); }
+    .service-icon { width:56px; height:56px; display:grid; place-items:center; border-radius:12px; background: linear-gradient(135deg, rgba(173, 172, 174, 0.486), rgba(6,182,212,0.08)); color:white; font-size:22px; }
+
+    /* ---------- CLIENT MARQUEE ---------- */
+.client-marquee {
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+  background: #f9fafc;
+  border-radius: 12px;
+  padding: 20px 0;
+}
+
+.marquee-track {
+  display: flex;
+  gap: 70px; /* spacing between logos */
+  animation: marquee 20s linear infinite;
+}
+
+.marquee-item img {
+  height: 60px; /* uniform size */
+  width: auto;
+  object-fit: contain;
+  filter: brightness(1) contrast(1.1);
+  transition: transform 0.3s ease;
+}
+
+.marquee-item img:hover {
+  transform: scale(1.1);
+}
+
+@keyframes marquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+
+
+    .client-marquee { padding:.8rem; border-radius:12px; border:1px solid var(--glass-border); background: rgba(255,255,255,0.02); overflow:hidden; }
+    .marquee-track { display:flex; gap:2.2rem; align-items:center; white-space:nowrap; animation: marquee 18s linear infinite; }
+    .marquee-item svg, .marquee-item img { height:66px; width:156px; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.55)); }
+    @keyframes marquee { 0%{ transform: translateX(0%);} 100%{ transform: translateX(-50%);} }
+
+    /* ---------- CONTACT area ---------- */
+    .contact-panel { border-radius: var(--radius-lg); border:1px solid var(--glass-border); padding:1.25rem; background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); }
+    .contact-card { border-radius:12px; padding:1rem; border:1px solid rgba(255,255,255,0.03); background: rgba(255,255,255,0.02); }
+
+    .mailto-link { color: inherit; font-weight:700; text-decoration:underline; }
+
+    /* ---------- FOOTER ---------- */
+    footer.site-footer { padding:2.2rem 0; border-top: 1px solid rgba(255,255,255,0.03); color: var(--muted); }
+    footer .footer-grid { display:grid; grid-template-columns: 1fr; gap:1rem; }
+    @media(min-width:768px){ footer .footer-grid{ grid-template-columns: 2fr 1fr 1fr; align-items:start; } }
+    .newsletter-input { background: rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.03); color:inherit; }
+
+    /* small screens & misc */
+    @media (max-width:575px){ .hero { padding-top:2.2rem; padding-bottom:3rem; } }
+    @media (prefers-reduced-motion: reduce) { .marquee-track, .btn-neon { animation: none !important; transition: none !important; } }
+
+    /* accessible focus outlines */
+    a:focus, button:focus, input:focus, textarea:focus { outline: 3px solid rgba(6,182,212,0.14); outline-offset:3px; }
+
+    /* utility */
+    .muted { color:var(--muted); font-size:.95rem; }
+  </style>
+</head>
+<body>
+  <!-- Header / Nav -->
+  <header class="navbar navbar-expand-lg">
+    <div class="container-lg d-flex align-items-center justify-content-between">
+      <a class="navbar-brand" href="#" aria-label="Rubytronix Home">
+        <div class="brand-mark" aria-hidden="true">
+          <!-- small inline mark -->
+          <!-- <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <rect x="2.5" y="2.5" width="19" height="19" rx="5" fill="white" opacity="0.12"/>
+            <path d="M6 14c2.5-4 7-4.8 10-5.4" stroke="white" stroke-opacity="0.95" stroke-width="1.1" stroke-linecap="round"/>
+          </svg> -->
+          <img src="/HD.png" />
+        </div>
+        <div style="line-height:1;">
+          <div style="font-weight:800; font-size:1rem; color:#fff;">Rubytronix</div>
+          <small class="muted" style="font-size:.72rem;">Upgrade with Technology</small>
+        </div>
+      </a>
+
+      <div class="d-flex align-items-center gap-2">
+        <!-- THEME TOGGLE -->
+        <!-- <button id="themeToggle" class="btn btn-sm btn-outline-light d-flex align-items-center gap-2" title="Toggle theme" aria-pressed="false">
+          <i class="bi bi-moon-stars" id="themeIcon"></i> <span class="d-none d-md-inline">Theme</span>
+        </button> -->
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+          <i class="bi bi-list" style="font-size:1.05rem;"></i>
+        </button>
+      </div>
+
+      <nav class="collapse navbar-collapse justify-content-end" id="mainNav" aria-label="Main navigation">
+        <ul class="navbar-nav align-items-lg-center">
+          <li class="nav-item"><a class="nav-link px-3" href="#about">About</a></li>
+          <li class="nav-item"><a class="nav-link px-3" href="#services">Services</a></li>
+          <li class="nav-item"><a class="nav-link px-3" href="#clients">Clients</a></li>
+          <li class="nav-item"><a class="nav-link px-3" href="#contact">Contact</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- HERO with world map decorative SVG & subtle motion -->
+  <section id="about" class="hero">
+    <!-- world map decorative SVG (inline - replace with more detailed vector if needed) -->
+    <svg class="worldmap-deco" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <defs>
+        <linearGradient id="g1" x1="0" x2="1"><stop offset="0" stop-color="#06b6d4"/><stop offset="1" stop-color="#7c3aed"/></linearGradient>
+        <filter id="gl" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="12" result="b"/></filter>
+      </defs>
+      <g fill="none" stroke="url(#g1)" stroke-opacity="0.12" stroke-width="1.6" filter="url(#gl)">
+        <path d="M50 350 C200 160 380 140 560 220 C760 300 960 240 1180 300 C1360 345 1540 320 1580 320"/>
+        <path d="M40 480 C160 540 320 520 480 540 C640 560 840 520 1000 540 C1180 560 1400 520 1560 480"/>
+      </g>
+      <g fill="url(#g1)" opacity="0.06">
+        <circle cx="540" cy="240" r="16"></circle>
+        <circle cx="1000" cy="300" r="12"></circle>
+        <circle cx="760" cy="520" r="10"></circle>
+      </g>
+    </svg>
+
+    <div class="container-lg">
+      <div class="hero-inner">
+        <div class="hero-panel">
+          <h1 class="hero-title">We build global digital products — <span style="background:linear-gradient(90deg,#06b6d4,#7c3aed); -webkit-background-clip:text; color:transparent;">Made in India</span>, used worldwide.</h1>
+          <p class="hero-sub">We create powerful, production-ready solutions from enterprise web apps and sleek mobile experiences to AI-driven systems with reliable SLA-backed support</p>
+
+          <div class="mt-3 d-flex gap-2 flex-wrap">
+            <a href="#services" class="btn btn-neon d-inline-flex align-items-center gap-2"><i class="bi bi-rocket-takeoff"></i> See our Services</a>
+            <a href="#contact" class="btn btn-outline-light d-inline-flex align-items-center gap-2"><i class="bi bi-calendar2-week"></i> Schedule a Call</a>
+          </div>
+
+          <!-- <div class="mt-4 d-flex gap-2 align-items-center flex-wrap">
+            <div class="stat-chip"><i class="bi bi-globe2"></i> <strong style="margin-left:.5rem;">Global</strong><span class="muted" style="margin-left:.6rem;">Clients across 12+ countries</span></div>
+            <div style="width:8px"></div>
+            <div class="stat-chip"><i class="bi bi-award-fill"></i> <strong style="margin-left:.5rem;">Quality</strong><span class="muted" style="margin-left:.6rem;">Design systems & observability</span></div>
+          </div> -->
+
+          <!-- Inspirational story snippet -->
+          <!-- <div class="mt-4">
+            <h5 style="margin-bottom:.3rem;">Our story — built from a spark</h5>
+            <p class="muted" style="margin-bottom:0;">
+              We started as three founders in a tiny Mumbai studio with one conviction: world-class digital products can be built from India without compromise. Today we blend design, engineering and ML to help startups and enterprises ship fast, iterate safely, and delight users globally.
+            </p>
+          </div> -->
+           <div class="features mt-4">
+            <div class="feature"><span class="badge bg-white text-dark rounded-pill"><i class="bi bi-shield-lock-fill"></i></span><span class="muted">Enterprise-grade security</span></div>
+            <div class="feature"><span class="badge bg-white text-dark rounded-pill"><i class="bi bi-lightning-fill"></i></span><span class="muted">Performance-first architecture</span></div>
+            <div class="feature"><span class="badge bg-white text-dark rounded-pill"><i class="bi bi-gear-fill"></i></span><span class="muted">24/7 AMC & support</span></div>
+          </div>
+        </div>
+
+        <!-- aside: highlights / quick case -->
+        <!-- <aside class="d-none d-lg-block">
+          <div class="hero-panel" style="width:420px;">
+            <div class="d-flex align-items-center gap-3 mb-2">
+              <div style="width:64px;height:64px;border-radius:12px;background:linear-gradient(135deg, rgba(124,58,237,0.14), rgba(6,182,212,0.08)); display:grid;place-items:center;"><i class="bi bi-phone-fill" style="font-size:22px;"></i></div>
+              <div>
+                <strong>Product to scale</strong>
+                <div class="muted" style="font-size:.95rem;">Design systems, resilient infra and measurable outcomes.</div>
+              </div>
+            </div>
+
+            <hr style="border-color:rgba(255,255,255,0.03)">
+
+            <div style="display:grid; gap:.9rem;">
+              <div class="contact-card">
+                <strong>Featured: Retail Platform</strong>
+                <div class="muted" style="font-size:.9rem">End-to-end platform for a national retailer — 10M+ daily impressions.</div>
+              </div>
+
+              <div class="contact-card d-flex justify-content-between align-items-center">
+                <div>
+                  <strong>Office (India)</strong><div class="muted">Mumbai • Remote-first across India</div>
+                </div>
+                <div style="text-align:right"><a class="btn btn-sm btn-outline-light" href="mailto:support@rubytronix.in?subject=Office%20Visit&body=Hi%20Team%2C%0A%0AI%20would%20like%20to%20visit%20your%20office.%0A%0AThanks.">Email</a></div>
+              </div>
+            </div>
+
+            <div class="text-end mt-3"><a href="#contact" class="btn btn-sm btn-outline-light">Request Case Study</a></div>
+          </div>
+        </aside> -->
+      </div>
+    </div>
+  </section>
+
+  <!-- SERVICES -->
+  <main class="container-lg">
+    <section id="services" class="mt-5">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h2 style="margin-bottom:.2rem">What we do</h2>
+          <div class="muted">We combine design, engineering and ML to build production-grade products.</div>
+        </div>
+        <div class="d-none d-md-flex gap-2">
+          <div class="stat-chip"><i class="bi bi-people-fill"></i> <strong style="margin-left:.5rem;">40+</strong><span class="muted" style="margin-left:.6rem;"> Engineers</span></div>
+        </div>
+      </div>
+
+      <div class="row g-4 services-grid">
+        <div class="col-12 col-md-6 col-xl-3">
+          <div class="card h-100">
+            <div class="d-flex gap-3 align-items-start">
+              <div class="service-icon"><i class="bi bi-laptop"></i></div>
+              <div>
+                <h5 class="mb-1" style="color:#e7e714">Web Application</h5>
+                <small class="muted">SPAs, SSR, PWAs</small>
+                <p class="muted" style="margin-top:.6rem">Modern front-ends that scale: performance budgets, accessibility, and observability at the core.</p>
+                <a href="#contact" class="btn btn-sm btn-outline-light">Start a conversation</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-3">
+          <div class="card h-100">
+            <div class="d-flex gap-3 align-items-start">
+              <div class="service-icon"><i class="bi bi-phone"></i></div>
+              <div>
+                <h5 class="mb-1" style="color:#37e714">Mobile Application</h5>
+                <small class="muted">iOS & Android</small>
+                <p class="muted" style="margin-top:.6rem">Native or cross-platform — pixel-accurate UI, offline resilience and robust CI/CD.</p>
+                <a href="#contact" class="btn btn-sm btn-outline-light">Request quote</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-3">
+          <div class="card h-100">
+            <div class="d-flex gap-3 align-items-start">
+              <div class="service-icon"><i class="bi bi-lightning-fill"></i></div>
+              <div>
+                <h5 class="mb-1" style="color:#14e7e7">AI / ML</h5>
+                <small class="muted">MLOps & inference</small>
+                <p class="muted" style="margin-top:.6rem">Model pipelines, fine-tuning and real-time inference that create measurable business impact.</p>
+                <a href="#contact" class="btn btn-sm btn-outline-light">Speak with ML</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-3">
+          <div class="card h-100">
+            <div class="d-flex gap-3 align-items-start">
+              <div class="service-icon"><i class="bi bi-gear-fill"></i></div>
+              <div>
+                <h5 class="mb-1" style="color:#14e7a4">AMC</h5>
+                <small class="muted">Maintenance & SLAs</small>
+                <p class="muted" style="margin-top:.6rem">24/7 monitoring, patching, security & performance tuning with SLAs you can rely on.</p>
+                <a href="#contact" class="btn btn-sm btn-outline-light">Get an SLA</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CLIENTS marquee -->
+ <section id="clients" class="mt-5">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 style="margin:0">Worked with :</h2>
+    <div class="muted">Reputable Clients</div>
+  </div>
+
+  <div class="client-marquee">
+    <div class="marquee-track" aria-hidden="true">
+
+      <!-- Client Logos (replace with optimized PNG/SVG hosted in your repo/CDN) -->
+      <div class="marquee-item">
+        <img 
+          src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/73/Indian_Navy_Insignia_%282022%29.svg/800px-Indian_Navy_Insignia_%282022%29.svg.png" 
+          alt="Indian Navy" 
+        />
+      </div>
+
+      <div class="marquee-item">
+        <img 
+          src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Indian_Army_Insignia_circular.png/800px-Indian_Army_Insignia_circular.png" 
+          alt="Indian Army" 
+        />
+      </div>
+
+      <div class="marquee-item">
+        <img 
+          src="https://www.equalinnovation.com/EI%20%20png.png" 
+          alt="Equal Innovation" 
+        />
+      </div>
+
+      <!-- duplicate set for smooth infinite scrolling -->
+      <div class="marquee-item">
+        <img 
+          src="https://www.startus.cc/sites/default/files/styles/company_profile_logo/public/company_logos/logo_9912.png?itok=Ap6PpKVd" 
+          alt="Dezy" 
+        />
+      </div>
+
+      <div class="marquee-item">
+        <img 
+          src="https://appolonia.ae/uploads/insurances/nextcare.webp" 
+          alt="nextcare" 
+        />
+      </div>
+
+      
+
+    </div>
+  </div>
+</section>
+
+
+    <!-- CONTACT -->
+    <section id="contact" class="mt-5 mb-5">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 style="margin:0">Contact Us</h2>
+      </div>
+
+      <div class="row g-4">
+        <!-- contact form -->
+        <div class="col-12 col-md-7">
+          <div class="contact-panel">
+            <form id="contactForm" action="#" novalidate>
+              <div class="row g-2">
+                <div class="col-12 col-md-6">
+                  <label class="form-label small">Full name</label>
+                  <input class="form-control form-control-lg" name="name" type="text" placeholder="Priya Sharma" required>
+                </div>
+                <div class="col-12 col-md-6">
+                  <label class="form-label small">Email</label>
+                  <input class="form-control form-control-lg" name="email" type="email" placeholder="you@company.com" required>
+                </div>
+
+                <div class="col-12 col-md-6">
+                  <label class="form-label small">Phone</label>
+                  <input class="form-control form-control-lg" name="phone" type="tel" placeholder="+91 9XXXXXXXXX">
+                </div>
+
+                <div class="col-12 col-md-6">
+                  <label class="form-label small">Estimated budget</label>
+                  <select class="form-select form-select-lg" name="budget">
+                    <option value="">Select</option>
+                    <option value="10k-50k">₹10k - ₹50k</option>
+                    <option value="50k-200k">₹50k - ₹2L</option>
+                    <option value="200k-plus">₹2L+</option>
+                  </select>
+                </div>
+
+                <div class="col-12">
+                  <label class="form-label small">Project summary</label>
+                  <textarea class="form-control" name="message" rows="6" placeholder="Briefly describe your project and timeline..." required></textarea>
+                </div>
+
+                <div class="col-12 d-flex gap-2 align-items-center">
+                  <button id="submitBtn" class="btn btn-neon" type="submit"><i class="bi bi-send"></i> Send inquiry</button>
+                  <button class="btn btn-outline-light" type="reset">Reset</button>
+                  <small class="muted ms-auto">We'll reply within 48 hours (usually sooner).</small>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- contact details -->
+        <div class="col-12 col-md-5">
+          <div class="contact-panel">
+            <h5 style="margin-top:0">Get in touch</h5>
+            <p class="muted">Specializing in delivering innovative web, mobile, AI, and machine learning solutions, we drive measurable success with a product-first mindset and reliable outcomes</p>
+
+            <div style="display:grid; gap:.8rem; margin-top:1rem;">
+              <div class="contact-card">
+                <strong>Email</strong><br>
+                <!-- pre-filled mailto: subject + body encoded -->
+                <a class="mailto-link" href="mailto:support@rubytronix.in?subject=Website%20Inquiry%20-%20Rubytronix&body=Hi%20Rubytronix%20Team%2C%0A%0AI%27m%20interested%20in%20your%20services.%20Please%20share%20availability%20for%20a%20call.%0A%0AThanks.">support@rubytronix.in</a>
+              </div>
+
+              <!-- <div class="contact-card">
+                <strong>Phone</strong><br>
+                <a href="tel:+919000000000" class="mailto-link">+91 90000 00000</a>
+                <div class="muted" style="margin-top:.3rem;">Available Mon–Fri • 9:30am–6:30pm IST</div>
+              </div> -->
+
+              <div class="contact-card">
+                <strong>Schedule</strong><br>
+                <!-- opens a mailto with subject 'Schedule a call' as placeholder - replace with Calendly link if you have one -->
+                <a class="btn btn-sm btn-outline-light mt-2" href="mailto:support@rubytronix.in?subject=Schedule%20a%20call&body=Hi%20Team%2C%0A%0AI%20would%20like%20to%20schedule%20a%2030-minute%20call.%20Please%20share%20available%20slots.">Schedule a Call</a>
+              </div>
+            </div>
+
+            <hr style="border-color:rgba(255,255,255,0.03); margin-top:1rem;" />
+
+            <div class="d-flex gap-2 mt-2">
+              <!-- <a class="btn btn-sm btn-outline-light" href="#"><i class="bi bi-linkedin"></i></a>
+              <a class="btn btn-sm btn-outline-light" href="#"><i class="bi bi-twitter"></i></a>
+              <a class="btn btn-sm btn-outline-light" href="#"><i class="bi bi-github"></i></a> -->
+              <!-- <div class="muted ms-auto" style="align-self:center;">• Made in India </div> -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER (modern, responsive) -->
+  <footer class="site-footer">
+    <div class="container-lg">
+      <div class="footer-grid">
+        <div>
+          <div style="display:flex; gap:.6rem; align-items:center; margin-bottom:.6rem;">
+            <div class="brand-mark" style="width:36px;height:36px;">
+               <img src="/HD.png" />
+            </div>
+            <div>
+              <strong>Rubytronix IT Solutions </strong><br>
+              <small class="muted">Upgrade with Technology</small>
+            </div>
+          </div>
+
+          <p class="muted" style="margin-top:0;">We pair world-class product design with engineering and ML to create digital products built to scale and delight users.</p>
+
+          <div style="display:flex; gap:.5rem; margin-top:1rem;">
+            <a class="btn btn-outline-light btn-sm" href="#">Privacy</a>
+            <a class="btn btn-outline-light btn-sm" href="#">Terms</a>
+            <a class="btn btn-outline-light btn-sm" href="#contact">Contact</a>
+          </div>
+        </div>
+
+        <div>
+          <h6 style="margin-bottom:.6rem;">Services</h6>
+          <ul style="list-style:none; padding:0; margin:0;">
+            <li class="muted"><a href="#services">Web Applications</a></li>
+            <li class="muted"><a href="#services">Mobile Applications</a></li>
+            <li class="muted"><a href="#services">AI / ML</a></li>
+            <li class="muted"><a href="#services">AMC</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h6 style="margin-bottom:.6rem;">Stay updated</h6>
+          <form id="newsletterForm" onsubmit="return false;">
+            <div class="input-group">
+              <input class="form-control newsletter-input" type="email" placeholder="Your work email" aria-label="Email for newsletter" required>
+              <button class="btn btn-neon" type="submit">Subscribe</button>
+            </div>
+            <small class="muted">No spam. Unsubscribe anytime.</small>
+          </form>
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-between align-items-center mt-4">
+        <small class="muted"><span id="year"></span> </small>
+       <small class="muted">© 2025<span id="year"></span> Rubytronix IT Solutions LLP</small>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Bootstrap JS bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    // -------------------------
+    // Theme toggle (light/dark)
+    // -------------------------
+    (function(){
+      const body = document.body;
+      const toggle = document.getElementById('themeToggle');
+      const themeIcon = document.getElementById('themeIcon');
+
+      // restore theme from localStorage if present
+      const saved = localStorage.getItem('Rubytronix_theme');
+      if (saved === 'light') body.classList.add('theme-light');
+
+      const updateIcon = () => {
+        if (body.classList.contains('theme-light')) {
+          themeIcon.className = 'bi bi-sun-fill';
+          toggle.setAttribute('aria-pressed','true');
+        } else {
+          themeIcon.className = 'bi bi-moon-stars';
+          toggle.setAttribute('aria-pressed','false');
+        }
+      };
+      updateIcon();
+
+      toggle.addEventListener('click', () => {
+        body.classList.toggle('theme-light');
+        localStorage.setItem('Rubytronix_theme', body.classList.contains('theme-light') ? 'light' : 'dark');
+        updateIcon();
+      });
+    })();
+
+    // -------------------------
+    // Smooth in-page navigation & active link highlight
+    // -------------------------
+    (function(){
+      const navLinks = document.querySelectorAll('.nav-link');
+      // smooth scroll handled via CSS scroll-behavior but ensure collapse on small screen
+      document.querySelectorAll('a[href^="#"]').forEach(link => {
+        link.addEventListener('click', (e)=>{
+          const href = link.getAttribute('href');
+          if (!href || href === '#') return;
+          const el = document.querySelector(href);
+          if (!el) return;
+          // collapse nav on mobile if open
+          const nav = document.getElementById('mainNav');
+          if (nav && nav.classList.contains('show')) bootstrap.Collapse.getInstance(nav)?.hide();
+        });
+      });
+
+      // IntersectionObserver to mark active nav link
+      const sections = document.querySelectorAll('main section[id], section#about');
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          const id = entry.target.id ? '#' + entry.target.id : '#about';
+          const link = document.querySelector('.nav-link[href="' + id + '"]');
+          if (!link) return;
+          if (entry.isIntersecting) {
+            navLinks.forEach(n => n.classList.remove('active'));
+            link.classList.add('active');
+          }
+        });
+      }, { root: null, threshold: 0.28, rootMargin: '-10% 0px -40% 0px' });
+      sections.forEach(s => io.observe(s));
+    })();
+
+    // -------------------------
+    // Contact form UX (no backend) - simulate send
+    // -------------------------
+    (function(){
+      const form = document.getElementById('contactForm');
+      const submitBtn = document.getElementById('submitBtn');
+      form?.addEventListener('submit', (e)=>{
+        e.preventDefault();
+        submitBtn.disabled = true;
+        const original = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="bi bi-check-circle"></i> Sent';
+        // simple success feedback
+        setTimeout(()=> {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = original;
+          form.reset();
+          alert('Thanks — we received your inquiry. We will respond within 48 hours.');
+        }, 1200);
+      });
+    })();
+
+    // -------------------------
+    // Newsletter mock (no backend)
+    // -------------------------
+    document.getElementById('newsletterForm')?.addEventListener('submit', (e)=> {
+      e.preventDefault();
+      alert('Thanks! Subscribed (demo). Replace with your mailing provider endpoint to store addresses.');
+      e.target.reset();
+    });
+
+    // -------------------------
+    // Footer year auto-fill
+    // -------------------------
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // -------------------------
+    // Accessibility & reduced-motion preference
+    // -------------------------
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      document.querySelectorAll('.marquee-track').forEach(t => t.style.animation = 'none');
+    }
+
+    // -------------------------
+    // Optional parallax effect on world map (subtle)
+    // -------------------------
+    (function(){
+      const world = document.querySelector('.worldmap-deco');
+      if (!world) return;
+      window.addEventListener('scroll', () => {
+        // subtle translate on scroll for depth effect
+        const offset = window.scrollY * 0.06;
+        world.style.transform = `translateY(${ -4 + offset }%)`;
+      }, { passive: true });
+    })();
+  </script>
+</body>
+</html>
